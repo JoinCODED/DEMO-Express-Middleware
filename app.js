@@ -1,67 +1,56 @@
 const express = require("express");
-const cookieMethods = require("./cookieMethods");
+let cookies = require("./cookies");
 const bodyParser = require("body-parser");
 
 const app = express();
 
 app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-  res.json({ message: "Hello World" });
+// Cookie Create
+app.post("/cookies", (req, res) => {
+  const id = cookies[cookies.length - 1].id + 1;
+  const newCookie = { id, ...req.body }; //id is equivalent to id: id
+  cookies.push(newCookie);
+  res.status(201).json(newCookie);
 });
 
-// Retrieve cookies list
-app.get("/cookies", async (req, res) => {
-  try {
-    const cookies = await cookieMethods.getCookies();
-    res.json(cookies);
-  } catch (error) {
-    console.log("Error while fetching cookies", error);
+// Cookie List
+app.get("/cookies", (req, res) => {
+  res.json(cookies);
+});
+
+// Cookie Detail
+app.get("/cookies/:cookieId", (req, res) => {
+  const { cookieId } = req.params;
+  const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
+  if (foundCookie) {
+    res.json(foundCookie);
+  } else {
+    res.status(404).json({ message: "Cookie not found" });
   }
 });
 
-// Retrieve cookie detail
-app.get("/cookies/:cookieId", async (req, res) => {
-  try {
-    const { cookieId } = req.params;
-    const cookie = await cookieMethods.getCookie(cookieId);
-    res.json(cookie);
-  } catch (error) {
-    console.log("Error while fetching cookie", error);
-  }
-});
-
-// Create a new cookie
-app.post("/cookies", async (req, res) => {
-  try {
-    const newCookie = await cookieMethods.createCookie(req.body);
-    res.status(201).json(newCookie);
-  } catch (error) {
-    console.log("Error while creating a new cookie", error);
-  }
-});
-
-// Update an existing cookie
+// Cookie Update
 app.put("/cookies/:cookieId", async (req, res) => {
   const { cookieId } = req.params;
-  try {
-    const foundCookie = await cookieMethods.getCookie(cookieId);
-    let updatedCookie = { ...foundCookie, ...req.body };
-    await cookieMethods.updateCookie(updatedCookie);
+  const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
+  if (foundCookie) {
+    for (const key in req.body) foundCookie[key] = req.body[key];
     res.status(204).end();
-  } catch (error) {
-    console.log("Error while updating a cookie!", error);
+  } else {
+    res.status(404).json({ message: "Cookie not found" });
   }
 });
 
-// Delete an existing cookie
-app.delete("/cookies/:cookieId", async (req, res) => {
+// Cookie Delete
+app.delete("/cookies/:cookieId", (req, res) => {
   const { cookieId } = req.params;
-  try {
-    await cookieMethods.deleteCookie(cookieId);
+  const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
+  if (foundCookie) {
+    cookies = cookies.filter(cookie => cookie.id !== +cookieId);
     res.status(204).end();
-  } catch (error) {
-    console.log("Error while deleting a cookie!", error);
+  } else {
+    res.status(404).json({ message: "Cookie not found" });
   }
 });
 
