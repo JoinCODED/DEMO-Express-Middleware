@@ -26,22 +26,22 @@ const router = express.Router();
 
 ```javascript
 // Cookie Create
-router.post("/cookies", async (req, res) => {});
+router.post("/cookies", (req, res) => {});
 
 // Cookie List
-router.get("/cookies", async (req, res) => {});
+router.get("/cookies", (req, res) => {});
 
 // Cookie Detail
-router.get("/cookies/:cookieId", async (req, res) => {});
+router.get("/cookies/:cookieId", (req, res) => {});
 
 // Cookie Update
-router.put("/cookies/:cookieId", async (req, res) => {});
+router.put("/cookies/:cookieId", (req, res) => {});
 
 // Cookie Delete
-router.delete("/cookies/:cookieId", async (req, res) => {});
+router.delete("/cookies/:cookieId", (req, res) => {});
 ```
 
-1. Import the `cookies`.
+4. Import the `cookies`.
 
 ```javascript
 let cookies = require("../cookies");
@@ -53,46 +53,46 @@ let cookies = require("../cookies");
 module.exports = router;
 ```
 
-5. Import your `router` instance in `app.js`.
+6. Import your `router` instance in `app.js`.
 
 ```javascript
 // Routes
 const cookieRoutes = require("./routes/cookies");
 ```
 
-6. Finally, we will call our `cookieRoutes` using the `app.use` method.
+7. Finally, we will call our `cookieRoutes` using the `app.use` method.
 
 ```javascript
 app.use(cookieRoutes);
 ```
 
-7. So what's happening now is that when a request is received, express will look inside `cookieRoutes` to look for the route with the path similar to the request's.
+8. So what's happening now is that when a request is received, express will look inside `cookieRoutes` to look for the route with the path similar to the request's.
 
-8. Test your routes. Tada!! All is working.
+9. Test your routes. Tada!! All is working.
 
-9. Can this be even more cleaned up? Yes! Since all the routes in `cookieRoutes` start with the path `/cookies` we can modify our router call.
+10. Can this be even more cleaned up? Yes! Since all the routes in `cookieRoutes` start with the path `/cookies` we can modify our router call.
 
 ```javascript
 app.use("/cookies", cookieRoutes);
 ```
 
-10. Test one of the cookies routes, it's not found! Why? The path for retrieving the list of cookies is now: `/cookies/cookies`. Why? `app.use` is adding `/cookies` to the beginning of the route! So in `routes/cookies.js`, remove `/cookies` from the paths. Now, this router will **only** be called if the request starts with `/cookies`.
+11. Test one of the cookies routes, it's not found! Why? The path for retrieving the list of cookies is now: `/cookies/cookies`. Why? `app.use` is adding `/cookies` to the beginning of the route! So in `routes/cookies.js`, remove `/cookies` from the paths. Now, this router will **only** be called if the request starts with `/cookies`.
 
 ```javascript
 // Cookie Create
-router.post("/", async (req, res) => {});
+router.post("/", (req, res) => {});
 
 // Cookie List
-router.get("/", async (req, res) => {});
+router.get("/", (req, res) => {});
 
 // Cookie Detail
-router.get("/:cookieId", async (req, res) => {});
+router.get("/:cookieId", (req, res) => {});
 
 // Cookie Update
-router.put("/:cookieId", async (req, res) => {});
+router.put("/:cookieId", (req, res) => {});
 
 // Cookie Delete
-router.delete("/:cookieId", async (req, res) => {});
+router.delete("/:cookieId", (req, res) => {});
 ```
 
 **Controllers**
@@ -109,7 +109,7 @@ const cookies = require("../cookies");
 3. Let's start with the cookie create route. Copy the callback function from your list route and assign it to a function called `cookieCreate` as shown below. And to make things easier, export it directly
 
 ```javascript
-exports.cookieCreate = async (req, res) => {
+exports.cookieCreate = (req, res) => {
   const id = cookies[cookies.length - 1].id + 1;
   const newCookie = { id, ...req.body }; //id is equivalent to id: id
   cookies.push(newCookie);
@@ -117,13 +117,19 @@ exports.cookieCreate = async (req, res) => {
 };
 ```
 
-4. Now to use this controller, in `routes/cookies` require `cookieController` and pass it to the route.
+4. Now to use this controller, in `routes/cookies` require all methods from `cookieController` and pass it to the route.
 
 ```javascript
-const cookieController = require("../controllers/cookieController");
+const {
+  cookieCreate,
+  cookieList,
+  cookieDetail,
+  cookieUpdate,
+  cookieDelete
+} = require("../controllers/cookieController");
 
 // Cookie Create
-router.post("/", cookieController.cookieCreate);
+router.post("/", cookieCreate);
 ```
 
 5. Can you see how cute this looks? IKR! Let's create the other controller methods.
@@ -131,18 +137,18 @@ router.post("/", cookieController.cookieCreate);
 6. Cookie list:
 
 ```javascript
-exports.cookieList = async (req, res) => res.json(cookies);
+exports.cookieList = (req, res) => res.json(cookies);
 ```
 
 ```javascript
 // Cookie List
-router.get("/", cookieController.cookieList);
+router.get("/", cookieList);
 ```
 
 7. Cookie detail
 
 ```javascript
-exports.cookieDetail = async (req, res) => {
+exports.cookieDetail = (req, res) => {
   const { cookieId } = req.params;
   const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
   if (foundCookie) {
@@ -155,13 +161,13 @@ exports.cookieDetail = async (req, res) => {
 
 ```javascript
 // Cookie Detail
-router.get("/:cookieId", cookieController.cookieDetail);
+router.get("/:cookieId", cookieDetail);
 ```
 
 8. Cookie update
 
 ```javascript
-exports.cookieUpdate = async (req, res) => {
+exports.cookieUpdate = (req, res) => {
   const { cookieId } = req.params;
   const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
   if (foundCookie) {
@@ -175,13 +181,13 @@ exports.cookieUpdate = async (req, res) => {
 
 ```javascript
 // Cookie Update
-router.put("/:cookieId", cookieController.cookieUpdate);
+router.put("/:cookieId", cookieUpdate);
 ```
 
 9.  Cookie delete
 
 ```javascript
-exports.cookieDelete = async (req, res) => {
+exports.cookieDelete = (req, res) => {
   const { cookieId } = req.params;
   const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
   if (foundCookie) {
@@ -195,5 +201,5 @@ exports.cookieDelete = async (req, res) => {
 
 ```javascript
 // Cookie Delete
-router.delete("/:cookieId", cookieController.cookieDelete);
+router.delete("/:cookieId", cookieDelete);
 ```
