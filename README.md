@@ -25,29 +25,29 @@ const router = express.Router();
 3. Go back to `app.js` and cut ALL the routes and paste them in `routes/cookies` and change `app` to `router`. So, this `router` will be handling all the routes for now.
 
 ```javascript
-// Retrieve cookies list
-router.get("/cookies", async (req, res) => {});
-
-// Retrieve cookie detail
-router.get("/cookies/:cookieId", async (req, res) => {});
-
-// Create a new cookie
+// Cookie Create
 router.post("/cookies", async (req, res) => {});
 
-// Update an existing cookie
+// Cookie List
+router.get("/cookies", async (req, res) => {});
+
+// Cookie Detail
+router.get("/cookies/:cookieId", async (req, res) => {});
+
+// Cookie Update
 router.put("/cookies/:cookieId", async (req, res) => {});
 
-// Delete an existing cookie
+// Cookie Delete
 router.delete("/cookies/:cookieId", async (req, res) => {});
 ```
 
-4. Import the `cookieMethods`.
+1. Import the `cookies`.
 
 ```javascript
-const cookieMethods = require("../cookieMethods");
+let cookies = require("../cookies");
 ```
 
-5. Next, export `router`.
+5. Next, export your `router`.
 
 ```javascript
 module.exports = router;
@@ -79,19 +79,19 @@ app.use("/cookies", cookieRoutes);
 10. Test one of the cookies routes, it's not found! Why? The path for retrieving the list of cookies is now: `/cookies/cookies`. Why? `app.use` is adding `/cookies` to the beginning of the route! So in `routes/cookies.js`, remove `/cookies` from the paths. Now, this router will **only** be called if the request starts with `/cookies`.
 
 ```javascript
-// Retrieve cookies list
-router.get("/", async (req, res) => {});
-
-// Retrieve cookie detail
-router.get("/:cookieId", async (req, res) => {});
-
-// Create a new cookie
+// Cookie Create
 router.post("/", async (req, res) => {});
 
-// Update an existing cookie
+// Cookie List
+router.get("/", async (req, res) => {});
+
+// Cookie Detail
+router.get("/:cookieId", async (req, res) => {});
+
+// Cookie Update
 router.put("/:cookieId", async (req, res) => {});
 
-// Delete an existing cookie
+// Cookie Delete
 router.delete("/:cookieId", async (req, res) => {});
 ```
 
@@ -100,22 +100,20 @@ router.delete("/:cookieId", async (req, res) => {});
 Our code looks much cleaner now, but our routes still look messy! Let's clean it up by adding controllers. Controllers are basically the functions that are called by the routes.
 
 1. Create a folder called `controllers`. Inside it, create a file called `cookieController`. This file will have all the functions related to cookies.
-2. Import our `cookieMethods`:
+2. Import our `cookies`:
 
 ```javascript
-const cookieMethods = require("../cookieMethods");
+const cookies = require("../cookies");
 ```
 
-3. Let's start with the cookie list route. Copy the callback function from your list route and assign it to a function called `cookieList` as shown below. And to make things easier, export it directly
+3. Let's start with the cookie create route. Copy the callback function from your list route and assign it to a function called `cookieCreate` as shown below. And to make things easier, export it directly
 
 ```javascript
-exports.cookieList = async (req, res) => {
-  try {
-    const cookies = await cookieMethods.getCookies();
-    res.json(cookies);
-  } catch (error) {
-    console.log("Error while fetching cookies", error);
-  }
+exports.cookieCreate = async (req, res) => {
+  const id = cookies[cookies.length - 1].id + 1;
+  const newCookie = { id, ...req.body }; //id is equivalent to id: id
+  cookies.push(newCookie);
+  res.status(201).json(newCookie);
 };
 ```
 
@@ -124,46 +122,40 @@ exports.cookieList = async (req, res) => {
 ```javascript
 const cookieController = require("../controllers/cookieController");
 
-// Retrieve cookies list
-router.get("/", cookieController.cookieList);
+// Cookie Create
+router.post("/", cookieController.cookieCreate);
 ```
 
 5. Can you see how cute this looks? IKR! Let's create the other controller methods.
-6. Cookie detail:
+
+6. Cookie list:
+
+```javascript
+exports.cookieList = async (req, res) => res.json(cookies);
+```
+
+```javascript
+// Cookie List
+router.get("/", cookieController.cookieList);
+```
+
+7. Cookie detail
 
 ```javascript
 exports.cookieDetail = async (req, res) => {
-  try {
-    const { cookieId } = req.params;
-    const cookie = await cookieMethods.getCookie(cookieId);
-    res.json(cookie);
-  } catch (error) {
-    console.log("Error while fetching cookie", error);
+  const { cookieId } = req.params;
+  const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
+  if (foundCookie) {
+    res.json(foundCookie);
+  } else {
+    res.status(404).json({ message: "Cookie not found" });
   }
 };
 ```
 
 ```javascript
-// Retrieve cookie detail
+// Cookie Detail
 router.get("/:cookieId", cookieController.cookieDetail);
-```
-
-7. Cookie create
-
-```javascript
-exports.cookieCreate = async (req, res) => {
-  try {
-    const newCookie = await cookieMethods.createCookie(req.body);
-    res.status(201).json(newCookie);
-  } catch (error) {
-    console.log("Error while creating a new cookie", error);
-  }
-};
-```
-
-```javascript
-// Create a new cookie
-router.post("/", cookieController.cookieCreate);
 ```
 
 8. Cookie update
@@ -171,19 +163,18 @@ router.post("/", cookieController.cookieCreate);
 ```javascript
 exports.cookieUpdate = async (req, res) => {
   const { cookieId } = req.params;
-  try {
-    const foundCookie = await cookieMethods.getCookie(cookieId);
-    let updatedCookie = { ...foundCookie, ...req.body };
-    await cookieMethods.updateCookie(updatedCookie);
+  const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
+  if (foundCookie) {
+    for (const key in req.body) foundCookie[key] = req.body[key];
     res.status(204).end();
-  } catch (error) {
-    console.log("Error while updating a cookie!", error);
+  } else {
+    res.status(404).json({ message: "Cookie not found" });
   }
 };
 ```
 
 ```javascript
-// Update an existing cookie
+// Cookie Update
 router.put("/:cookieId", cookieController.cookieUpdate);
 ```
 
@@ -192,16 +183,17 @@ router.put("/:cookieId", cookieController.cookieUpdate);
 ```javascript
 exports.cookieDelete = async (req, res) => {
   const { cookieId } = req.params;
-  try {
-    await cookieMethods.deleteCookie(cookieId);
+  const foundCookie = cookies.find(cookie => cookie.id === +cookieId);
+  if (foundCookie) {
+    cookies = cookies.filter(cookie => cookie.id !== +cookieId);
     res.status(204).end();
-  } catch (error) {
-    console.log("Error while deleting a cookie!", error);
+  } else {
+    res.status(404).json({ message: "Cookie not found" });
   }
 };
 ```
 
 ```javascript
-// Delete an existing cookie
+// Cookie Delete
 router.delete("/:cookieId", cookieController.cookieDelete);
 ```
