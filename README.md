@@ -26,22 +26,23 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
 
    ```javascript
    // Cookie Create
-   router.post("/cookies", (req, res) => {});
+   router.post("/cookies", (req, res) => {...});
 
    // Cookie List
-   router.get("/cookies", (req, res) => {});
+   router.get("/cookies", (req, res) => {...});
 
    // Cookie Update
-   router.put("/cookies/:cookieId", (req, res) => {});
+   router.put("/cookies/:cookieId", (req, res) => {...});
 
    // Cookie Delete
-   router.delete("/cookies/:cookieId", (req, res) => {});
+   router.delete("/cookies/:cookieId", (req, res) => {...});
    ```
 
 4. Import the `cookies` dataset inside `routes/cookies.js`.
 
    ```javascript
    let cookies = require("../cookies");
+   const slugify = require("slugify");
    ```
 
    _You won't need the `cookies` dataset in `app.js` anymore, remove the import there._
@@ -81,16 +82,16 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
 
     ```javascript
     // Cookie Create
-    router.post("/", (req, res) => {});
+    router.post("/", (req, res) => {...});
 
     // Cookie List
-    router.get("/", (req, res) => {});
+    router.get("/", (req, res) => {...});
 
     // Cookie Update
-    router.put("/:cookieId", (req, res) => {});
+    router.put("/:cookieId", (req, res) => {...});
 
     // Cookie Delete
-    router.delete("/:cookieId", (req, res) => {});
+    router.delete("/:cookieId", (req, res) => {...});
     ```
 
 **Controllers**
@@ -98,7 +99,8 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
 Our code looks much cleaner now, but our routes still look messy! Let's clean it up by adding controllers. **Controllers are basically the functions that are called by the routes.**
 
 1. Create a folder called `controllers`. Inside it, create a file called `cookieController.js`. This file will have all the functions related to cookies.
-2. Import our `cookies`:
+
+2. Import our `cookies` and `slugify`:
 
    ```javascript
    let cookies = require("../cookies");
@@ -111,7 +113,8 @@ Our code looks much cleaner now, but our routes still look messy! Let's clean it
    ```javascript
    exports.cookieCreate = (req, res) => {
      const id = cookies[cookies.length - 1].id + 1;
-     const newCookie = { id, ...req.body }; //id is equivalent to id: id
+     const slug = slugify(req.body.name, { lower: true });
+     const newCookie = { id, slug, ...req.body };
      cookies.push(newCookie);
      res.status(201).json(newCookie);
    };
