@@ -5,24 +5,22 @@
 - Routes
 - Controllers
 
-(Add discussion link here)
-
 ### Demo:
 
 **Express Routers**
 
 To clean up our routes, we will move them all out of `app.js` into a folder that handles all of our routes. In this folder, we will create multiple **mini express applications**.
 
-1. Let's start with creating our `routes` folder and a file for the main routes `cookies.js`.
+1. Let's start with creating a folder called `api`. Inside it, we will create a folder called `cookies`. Inside it, we will create a file called `routes.js`.
 
-2. To create our mini-app we will use a method from `express` called `Router()` which is a complete router system that will handle the routing on behalf of our express app. So in `cookies.js` we will require `express` and define our mini-app `router`.
+2. To create our mini-app we will use a method from `express` called `Router()` which is a complete router system that will handle the routing on behalf of our express app. So in `routes.js` we will require `express` and define our mini-app `router`.
 
    ```javascript
    const express = require("express");
    const router = express.Router();
    ```
 
-3. Go back to `app.js` and cut `(CTRL/CMD + X)` ALL the routes and paste them in `routes/cookies.js` and change `app` to `router`. So, this `router` will be handling all the routes for now.
+3. Go back to `app.js` and cut ALL the routes and paste them in `cookies/routes.js` and change `app` to `router`. So, this `router` will be handling all the routes for now.
 
    ```javascript
    // Cookie Create
@@ -31,14 +29,14 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
    // Cookie List
    router.get("/cookies", (req, res) => {...});
 
-   // Cookie Update
-   router.put("/cookies/:cookieId", (req, res) => {...});
+   // Cookie Detail
+   router.get("/cookies/:cookieId", (req, res) => {...});
 
    // Cookie Delete
    router.delete("/cookies/:cookieId", (req, res) => {...});
    ```
 
-4. Import the `cookies` dataset inside `routes/cookies.js`.
+4. Require the `cookies` dataset inside `routes/cookies.js`.
 
    ```javascript
    let cookies = require("../cookies");
@@ -57,7 +55,7 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
 
    ```javascript
    // Routes
-   const cookieRoutes = require("./routes/cookies");
+   const cookieRoutes = require("./cookies/routes");
    ```
 
 7. Finally, we will call our `cookieRoutes` using the `app.use()` method.
@@ -87,8 +85,8 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
     // Cookie List
     router.get("/", (req, res) => {...});
 
-    // Cookie Update
-    router.put("/:cookieId", (req, res) => {...});
+    // Cookie Detail
+    router.get("/:cookieId", (req, res) => {...});
 
     // Cookie Delete
     router.delete("/:cookieId", (req, res) => {...});
@@ -98,9 +96,9 @@ To clean up our routes, we will move them all out of `app.js` into a folder that
 
 Our code looks much cleaner now, but our routes still look messy! Let's clean it up by adding controllers. **Controllers are basically the functions that are called by the routes.**
 
-1. Create a folder called `controllers`. Inside it, create a file called `cookieController.js`. This file will have all the functions related to cookies.
+1. Create a file called `controllers.js` inside `cookies`. This file will have all the functions related to cookies.
 
-2. Import our `cookies` and `slugify`:
+2. Require our `cookies`:
 
    ```javascript
    let cookies = require("../cookies");
@@ -112,15 +110,12 @@ Our code looks much cleaner now, but our routes still look messy! Let's clean it
 
    ```javascript
    exports.cookieCreate = (req, res) => {
-     const id = cookies[cookies.length - 1].id + 1;
-     const slug = slugify(req.body.name, { lower: true });
-     const newCookie = { id, slug, ...req.body };
      cookies.push(newCookie);
      res.status(201).json(newCookie);
    };
    ```
 
-4. Now to use this controller, in `routes/cookies.js` require all methods from `cookieController` and pass it to the route.
+4. Now to use this controller, in `routes.js` require all methods from `controllers.js` and pass it to the route.
 
    ```javascript
    const {
@@ -130,7 +125,6 @@ Our code looks much cleaner now, but our routes still look messy! Let's clean it
      cookieDelete,
    } = require("../controllers/cookieController");
 
-   // Cookie Create
    router.post("/", cookieCreate);
    ```
 
@@ -143,19 +137,17 @@ Our code looks much cleaner now, but our routes still look messy! Let's clean it
    ```
 
    ```javascript
-   // Cookie List
    router.get("/", cookieList);
    ```
 
-7. Cookie update
+7. Cookie detail
 
    ```javascript
    exports.cookieUpdate = (req, res) => {
      const { cookieId } = req.params;
      const foundCookie = .find((cookie) => cookie.id === +cookieId);
      if (foundCookie) {
-       for (const key in req.body) foundCookie[key] = req.body[key];
-       res.status(204).end();
+       res.json(foundCookie);
      } else {
        res.status(404).json({ message: "Cookie not found" });
      }
@@ -163,8 +155,7 @@ Our code looks much cleaner now, but our routes still look messy! Let's clean it
    ```
 
    ```javascript
-   // Cookie Update
-   router.put("/:cookieId", cookieUpdate);
+   router.get("/:cookieId", cookieUpdate);
    ```
 
 8. Cookie delete
@@ -183,6 +174,5 @@ exports.cookieDelete = (req, res) => {
 ```
 
 ```javascript
-// Cookie Delete
 router.delete("/:cookieId", cookieDelete);
 ```
