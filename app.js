@@ -12,6 +12,8 @@ app.use(express.json());
 
 // Cookie Create
 app.post("/cookies", (req, res) => {
+  const id = cookies[cookies.length - 1].id + 1;
+  const newCookie = { id, ...req.body };
   cookies.push(newCookie);
   res.status(201).json(newCookie);
 });
