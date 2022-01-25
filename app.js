@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const db = require("./db/models");
 
 // Data
 let cookies = require("./cookies");
