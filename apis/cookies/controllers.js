@@ -1,23 +1,23 @@
 const Cookie = require("../../db/models/Cookie");
-exports.cookieCreate = async (req, res) => {
+exports.cookieCreate = async (req, res, next) => {
   try {
     const newCookie = await Cookie.create(req.body);
     return res.status(201).json(newCookie);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.cookieList = async (req, res) => {
+exports.cookieList = async (req, res, next) => {
   try {
     const cookies = await Cookie.find();
     res.json(cookies);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.cookieDetail = async (req, res) => {
+exports.cookieDetail = async (req, res, next) => {
   try {
     const { cookieId } = req.params;
     const foundCookie = await Cookie.findById(cookieId);
@@ -27,25 +27,25 @@ exports.cookieDetail = async (req, res) => {
       res.status(404).json({ message: "Product not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.cookieDelete = async (req, res) => {
+exports.cookieDelete = async (req, res, next) => {
   try {
     const { cookieId } = req.params;
     const foundCookie = await Cookie.findByIdAndRemove({ _id: cookieId });
     if (foundCookie) {
       res.status(204).json({ message: "Product deleted" });
     } else {
-      res.status(404).json({ message: "Product not found" });
+      next({ status: 404, message: "cookie Not Found" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.cookieUpdate = async (req, res) => {
+exports.cookieUpdate = async (req, res, next) => {
   try {
     const { cookieId } = req.params;
     const cookie = await Cookie.findByIdAndUpdate({ _id: cookieId }, req.body, {
@@ -53,8 +53,8 @@ exports.cookieUpdate = async (req, res) => {
       runValidators: true,
     });
     if (cookie) return res.json(cookie);
-    else return res.status(404).json({ message: "cookie not found" });
+    else next({ status: 404, message: "cookie Not Found" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
