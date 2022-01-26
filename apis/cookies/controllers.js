@@ -1,5 +1,4 @@
 const Cookie = require("../../db/models/Cookie");
-
 exports.cookieCreate = async (req, res) => {
   try {
     const newCookie = await Cookie.create(req.body);
@@ -35,10 +34,9 @@ exports.cookieDetail = async (req, res) => {
 exports.cookieDelete = async (req, res) => {
   try {
     const { cookieId } = req.params;
-    const foundCookie = await Cookie.findById(cookieId);
+    const foundCookie = await Cookie.findByIdAndRemove({ _id: cookieId });
     if (foundCookie) {
-      foundCookie.remove();
-      res.status(204).end();
+      res.status(204).json({ message: "Product deleted" });
     } else {
       res.status(404).json({ message: "Product not found" });
     }
