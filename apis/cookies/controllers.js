@@ -1,4 +1,4 @@
-const Cookie = require("../../models/Cookie");
+const Cookie = require("../../db/models/Cookie");
 
 exports.cookieCreate = async (req, res) => {
   try {
