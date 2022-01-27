@@ -7,7 +7,20 @@ const {
   cookieDetail,
   cookieDelete,
   cookieUpdate,
+  fetchCookie,
 } = require("./controllers");
+
+router.param("cookieId", async (req, res, next, cookieId) => {
+  const cookie = await fetchCookie(cookieId, next);
+  if (cookie) {
+    req.cookie = cookie;
+    next();
+  } else {
+    const err = new Error("Cookie Not Found");
+    err.status = 404;
+    next(err);
+  }
+});
 
 // Cookie Create
 router.post("/", cookieCreate);

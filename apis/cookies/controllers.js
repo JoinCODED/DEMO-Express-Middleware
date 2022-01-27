@@ -1,4 +1,14 @@
 const Cookie = require("../../db/models/Cookie");
+
+exports.fetchCookie = async (cookieId, next) => {
+  try {
+    const cookie = await Cookie.findById(cookieId);
+    return cookie;
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.cookieCreate = async (req, res, next) => {
   try {
     const newCookie = await Cookie.create(req.body);
@@ -33,13 +43,9 @@ exports.cookieDetail = async (req, res, next) => {
 
 exports.cookieDelete = async (req, res, next) => {
   try {
-    const { cookieId } = req.params;
-    const foundCookie = await Cookie.findByIdAndRemove({ _id: cookieId });
-    if (foundCookie) {
-      res.status(204).json({ message: "Product deleted" });
-    } else {
-      next({ status: 404, message: "cookie Not Found" });
-    }
+    await Cookie.findByIdAndRemove({ _id: req.cookie.id });
+
+    res.status(200).json({ message: "Product deleted" });
   } catch (error) {
     next(error);
   }
@@ -47,13 +53,15 @@ exports.cookieDelete = async (req, res, next) => {
 
 exports.cookieUpdate = async (req, res, next) => {
   try {
-    const { cookieId } = req.params;
-    const cookie = await Cookie.findByIdAndUpdate({ _id: cookieId }, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (cookie) return res.json(cookie);
-    else next({ status: 404, message: "cookie Not Found" });
+    const cookie = await Cookie.findByIdAndUpdate(
+      { _id: req.cookie.id },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    res.status(200).json(cookie);
   } catch (error) {
     next(error);
   }
