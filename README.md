@@ -94,10 +94,10 @@ router.param("cookieId", async (req, res, next, cookieId) => {
 ```
 
 3. we can add the if here for handling the error 
-   ```javascript 
-   router.param("cookieId", async (req, res, next, cookieId) => {
-      const cookie = await fetchCooki(cookieId, next); if (cookie) {
-      req.cookie = cookie;
+```javascript 
+router.param("cookieId", async (req, res, next, cookieId) => {
+     const cookie = await fetchCooki(cookieId, next); if (cookie) {
+     req.cookie = cookie;
      next();
     } else {
      const err = new Error("Cookie Not Found");
@@ -105,30 +105,28 @@ router.param("cookieId", async (req, res, next, cookieId) => {
      next(err);
     }
    });
-
+```
 4. fix update cookie in the controller
-   ```javascript
-          exports.cookieUpdate = async (req, res, next) => {
-         try {
-          const cookie = await Cookie.findByIdAndUpdate(
-           { _id: req.cookie.id },
-          req.body,
+```javascript
+    exports.cookieUpdate = async (req, res, next) => {
+        try {
+          const cookie = await Cookie.findByIdAndUpdate({ _id: req.cookie.id }, req.body,
           {
               new: true,
         runValidators: true,
           }
        );
-        res.status(200).json(cookie);
+       res.status(200).json(cookie);
        } catch (error) {
         next(error);
        }
          };
-   ```
-   5. fix delete cookie 
-   ```javasript 
-     exports.cookieDelete = async (req, res, next) => {
+```
+5. fix delete cookie 
+```javasript 
+    exports.cookieDelete = async (req, res, next) => {
       try {
-     await Cookie.findByIdAndRemove({ _id: req.cookie.id });
+       await Cookie.findByIdAndRemove({ _id: req.cookie.id });
 
       res.status(200).json({ message: "Product deleted" });
      } catch (error) {
