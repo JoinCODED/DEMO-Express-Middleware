@@ -71,3 +71,68 @@ OR
 ```javascript
 next({status: 404, message: "Cookie Not Found"});
 ```
+
+
+### this part comes after the first middleware task 
+**Fetch cookie**
+1. lets stop the redundent code by adding a fetchCookie function in the contoller 
+```javascript
+exports.fetchCookie = async (cookieId, next) => {
+  try {
+    const cookie = await Cookie.findById(cookieId);
+    return cookie;
+  } catch (error) {
+    next(error);
+  }
+};
+```
+2. in routes add the param middleware, dont forget next()
+```javascript
+router.param("cookieId", async (req, res, next, cookieId) => {
+  const cookie = await fetchCookie(cookieId, next);
+  req.cookie = cookie;
+  next();
+});
+```
+
+3. we can add the if here for handling the error 
+```javascript 
+router.param("cookieId", async (req, res, next, cookieId) => {
+     const cookie = await fetchCooki(cookieId, next); if (cookie) {
+     req.cookie = cookie;
+     next();
+    } else {
+     const err = new Error("Cookie Not Found");
+     err.status = 404;
+     next(err);
+    }
+   });
+```
+4. fix update cookie in the controller
+```javascript
+    exports.cookieUpdate = async (req, res, next) => {
+        try {
+          const cookie = await Cookie.findByIdAndUpdate({ _id: req.cookie.id }, req.body,
+          {
+              new: true,
+        runValidators: true,
+          }
+       );
+       res.status(200).json(cookie);
+       } catch (error) {
+        next(error);
+       }
+         };
+```
+5. fix delete cookie 
+```javasript 
+    exports.cookieDelete = async (req, res, next) => {
+      try {
+       await Cookie.findByIdAndRemove({ _id: req.cookie.id });
+
+      res.status(200).json({ message: "Product deleted" });
+     } catch (error) {
+     next(error);
+     }
+      };
+```
