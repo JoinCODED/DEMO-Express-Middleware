@@ -106,7 +106,7 @@ router.param("cookieId", async (req, res, next, cookieId) => {
     }
    });
 
-4. fix update cookie in the controller,as well as delete
+4. fix update cookie in the controller
    ```javascript
           exports.cookieUpdate = async (req, res, next) => {
          try {
@@ -123,7 +123,10 @@ router.param("cookieId", async (req, res, next, cookieId) => {
         next(error);
        }
          };
-         exports.cookieDelete = async (req, res, next) => {
+   ```
+   5. fix delete cookie 
+   ```javasript 
+     exports.cookieDelete = async (req, res, next) => {
       try {
      await Cookie.findByIdAndRemove({ _id: req.cookie.id });
 
@@ -132,4 +135,4 @@ router.param("cookieId", async (req, res, next, cookieId) => {
      next(error);
      }
       };
-   ```
+      ```
