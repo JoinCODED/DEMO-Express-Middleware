@@ -125,7 +125,7 @@ router.param("cookieId", async (req, res, next, cookieId) => {
          };
 ```
 5. fix delete cookie 
-```javasript 
+```javascript 
     exports.cookieDelete = async (req, res, next) => {
       try {
        await Cookie.findByIdAndRemove({ _id: req.cookie.id });
@@ -136,3 +136,7 @@ router.param("cookieId", async (req, res, next, cookieId) => {
      }
       };
 ```
+6. create a folder called middleware 
+7. create a file called errorHandler and add the errorHandler function
+8. require it in app and use it 
+9. do the same for the logger 
